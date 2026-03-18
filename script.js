@@ -62,6 +62,16 @@ function initOneZinGallery(gallery) {
     const total = slides.length;
     if (!track || total === 0) return;
     
+    const wrap = gallery.closest('.zin-gallery-wrap');
+    const thumbsContainer = wrap ? wrap.querySelector('.zin-gallery-thumbs') : null;
+    let thumbs = wrap ? wrap.querySelectorAll('.zin-gallery-thumb') : [];
+    // Удалить миниатюры без соответствующего слайда (например после prune в pillar)
+    Array.from(thumbs).forEach((t) => {
+        const i = parseInt(t.dataset.index, 10);
+        if (!isNaN(i) && i >= total) t.remove();
+    });
+    thumbs = wrap ? wrap.querySelectorAll('.zin-gallery-thumb') : [];
+    
     if (total === 5) gallery.classList.add('zin-gallery--5');
     if (total === 6) gallery.classList.add('zin-gallery--6');
     if (total === 10) gallery.classList.add('zin-gallery--10');
@@ -72,15 +82,65 @@ function initOneZinGallery(gallery) {
         gallery.style.cursor = makeZinCursorUrl(index + 1, total);
     }
     
+    function updateThumbs() {
+        thumbs.forEach((t, j) => t.classList.toggle('is-selected', j === index));
+    }
+    
+    function scrollThumbIntoView() {
+        if (!thumbsContainer || !thumbs[index]) return;
+        const thumb = thumbs[index];
+        const scrollLeft = thumbsContainer.scrollLeft;
+        const thumbLeft = thumb.offsetLeft;
+        const thumbRight = thumbLeft + thumb.offsetWidth;
+        const visibleLeft = scrollLeft;
+        const visibleRight = scrollLeft + thumbsContainer.clientWidth;
+        const isVisible = thumbLeft >= visibleLeft && thumbRight <= visibleRight;
+        if (isVisible) return;
+        const targetScroll = thumb.offsetLeft - 101;
+        const maxScroll = thumbsContainer.scrollWidth - thumbsContainer.clientWidth;
+        thumbsContainer.scrollTo({
+            left: Math.max(0, Math.min(targetScroll, maxScroll)),
+            behavior: 'smooth'
+        });
+    }
+    
     function goTo(i) {
         index = ((i % total) + total) % total;
         track.style.transform = `translateX(-${(index / total) * 100}%)`;
+        gallery.dataset.currentIndex = String(index + 1);
+        gallery.dataset.total = String(total);
         updateCursor();
+        updateThumbs();
+        scrollThumbIntoView();
+        // Сразу обновить счётчик у кастомного курсора, если он над этой галереей
+        const customCursor = document.getElementById('custom-cursor');
+        if (customCursor?.classList.contains('custom-cursor--gallery')) {
+            const countEl = customCursor.querySelector('.custom-cursor-gallery-count');
+            if (countEl) {
+                const x = parseInt(customCursor.style.left, 10) || 0;
+                const y = parseInt(customCursor.style.top, 10) || 0;
+                const under = document.elementFromPoint(x, y);
+                if (under?.closest('.zin-gallery') === gallery) {
+                    countEl.textContent = (index + 1) + '/' + total;
+                }
+            }
+        }
     }
+    
+    gallery.dataset.total = String(total);
+    gallery.dataset.currentIndex = '1';
     
     function next() {
         goTo(index + 1);
     }
+    
+    thumbs.forEach((thumb) => {
+        const i = parseInt(thumb.dataset.index, 10);
+        if (isNaN(i)) return;
+        thumb.addEventListener('click', () => {
+            goTo(i);
+        });
+    });
     
     gallery.addEventListener('mouseenter', updateCursor);
     gallery.addEventListener('click', next);
@@ -101,6 +161,7 @@ function initOneZinGallery(gallery) {
     }, { passive: true });
     
     updateCursor();
+    updateThumbs();
 }
 
 function initZinGallery() {
@@ -151,10 +212,12 @@ function initCustomCursor() {
         cursor = document.createElement('div');
         cursor.className = 'custom-cursor';
         cursor.id = 'custom-cursor';
-        cursor.innerHTML = '<img src="img/cursor.svg" alt="" width="48" height="48">';
+        cursor.innerHTML = '<img src="img/cursor.svg" alt="" width="48" height="48"><span class="custom-cursor-gallery-count" aria-hidden="true"></span>';
         document.body.appendChild(cursor);
         document.body.classList.add('has-custom-cursor');
         document.documentElement.classList.add('has-custom-cursor');
+    } else if (!cursor.querySelector('.custom-cursor-gallery-count')) {
+        cursor.insertAdjacentHTML('beforeend', '<span class="custom-cursor-gallery-count" aria-hidden="true"></span>');
     }
 
     var savedX = sessionStorage.getItem('cursorX');
@@ -189,11 +252,32 @@ function initCustomCursor() {
     document.addEventListener('mouseup', release);
     document.addEventListener('mouseleave', release);
 
-    // над галереей скрываем кастомный курсор — виден курсор галереи (1/N)
+    // над галереей кастомный курсор показывает 1/n (кегль 24, цвет #FB0000)
+    const countEl = cursor.querySelector('.custom-cursor-gallery-count');
+    function updateGalleryCursor(galleryEl) {
+        if (!countEl || !galleryEl) return;
+        const cur = galleryEl.dataset.currentIndex || '1';
+        const tot = galleryEl.dataset.total || '1';
+        countEl.textContent = cur + '/' + tot;
+    }
+
     document.querySelectorAll('.zin-gallery').forEach((el) => {
-        el.addEventListener('mouseenter', () => cursor.classList.add('custom-cursor--hidden'));
-        el.addEventListener('mouseleave', () => cursor.classList.remove('custom-cursor--hidden'));
+        el.addEventListener('mouseenter', () => {
+            cursor.classList.remove('custom-cursor--hidden');
+            cursor.classList.add('custom-cursor--gallery');
+            updateGalleryCursor(el);
+        });
+        el.addEventListener('mouseleave', () => {
+            cursor.classList.remove('custom-cursor--gallery');
+        });
     });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!cursor.classList.contains('custom-cursor--gallery')) return;
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        const galleryEl = under && under.closest('.zin-gallery');
+        if (galleryEl) updateGalleryCursor(galleryEl);
+    }, { passive: true });
 }
 
 // Заставка при входе: 1 раз за сессию; rock 300px, «Click to see»; по клику — на главную
@@ -246,12 +330,22 @@ function initFooterMskTime() {
 }
 
 // Work page: 3 clicks on egg — усиливающаяся тряска, затем показ видео «You find Velociraptor»
+const WORK_EGG_SESSION_KEY = 'workEggUnlocked';
+
 function initWorkEgg() {
     const eggBlock = document.getElementById('work-egg-block');
     const egg = document.getElementById('work-egg');
     const videoBlock = document.getElementById('work-video-block');
     const video = videoBlock?.querySelector('.work-footer-video');
     if (!eggBlock || !egg || !videoBlock || !video) return;
+
+    // В течение сессии оставляем видео, если уже открывали
+    if (sessionStorage.getItem(WORK_EGG_SESSION_KEY)) {
+        eggBlock.classList.add('is-hidden');
+        videoBlock.classList.remove('is-hidden');
+        video.play().catch(() => {});
+        return;
+    }
 
     let clicks = 0;
 
@@ -271,12 +365,22 @@ function initWorkEgg() {
                     egg.classList.remove('work-egg-exit');
                     eggBlock.classList.add('is-hidden');
                     videoBlock.classList.remove('is-hidden');
+                    sessionStorage.setItem(WORK_EGG_SESSION_KEY, '1');
                     video.play().catch(() => {});
                 });
             }
         }, 400);
     });
 }
+
+// При возврате по Back страница может подгрузиться из bfcache — видео не останавливаем, перезапускаем
+window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    document.querySelectorAll('video').forEach((v) => {
+        if (v.closest('.is-hidden')) return;
+        v.play().catch(() => {});
+    });
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     initSplash();

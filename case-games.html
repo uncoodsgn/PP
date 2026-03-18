@@ -13,31 +13,56 @@
     <script>!function(){if(!window.matchMedia("(hover: hover)").matches)return;document.body.classList.add("has-custom-cursor");document.documentElement.classList.add("has-custom-cursor");var c=document.createElement("div");c.className="custom-cursor",c.id="custom-cursor",c.innerHTML='<img src="img/cursor.svg" alt="" width="48" height="48">';var sx=sessionStorage.getItem("cursorX"),sy=sessionStorage.getItem("cursorY");if(sx!=null&&sy!=null){c.style.left=sx+"px";c.style.top=sy+"px";}document.body.appendChild(c);}();</script>
 
     <header class="work-header">
-        <a href="work.html" class="work-header-back"><span class="work-header-icon-wrap"><img src="img/Back.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Back_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span>Back</a>
-        <a href="work.html" class="work-header-title">Work</a>
-        <a href="work.html" class="work-header-pet">Next<span class="work-header-icon-wrap"><img src="img/Next.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Next_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span></a>
+        <a href="#" class="work-header-back" onclick="history.back(); return false;"><span class="work-header-icon-wrap"><img src="img/Back.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Back_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span>Back</a>
+        <a href="index.html" class="work-header-title">Denis Krupin</a>
+        <a href="case-referral.html" class="work-header-pet">Next Case<span class="work-header-icon-wrap"><img src="img/Next.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Next_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span></a>
     </header>
 
     <main class="main work-case-single-main">
-        <section class="work-experience-content work-case-single-content">
+        <section class="work-experience-content work-case-single-content work-case--games">
             <div class="work-case-column work-case-column--single">
                 <div class="work-case-title-row">
                     <h2 class="work-case-title">Mobile Games</h2>
-                    <p class="work-case-subtitle">Yandex Market, 2025 AD</p>
+                    <p class="work-case-subtitle">(Yandex Market, 2025 AD)</p>
                 </div>
                 <div class="work-case-divider"></div>
                 <div class="work-case-text-wrap">
                     <div class="work-case-text-block">My task was to design vibrant characters, immersive environments, and original enemies for seven games with diverse user experiences.</div>
                     <div class="work-case-text-block">As part of the Yandex Market game hub, these games engage millions of users and drive discount accumulation during promotions.</div>
                 </div>
-                <div class="work-case-rect">
-                    <video class="work-case-video" autoplay loop muted playsinline>
-                        <source src="img/game.mp4" type="video/mp4">
-                    </video>
+                <div class="work-case-media-row">
+                    <div class="work-case-rect work-case-rect--main">
+                        <video class="work-case-video" autoplay loop muted playsinline>
+                            <source src="img/game.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="work-case-rect-column">
+                        <div class="work-case-rect work-case-rect--img">
+                            <video class="work-case-rect-img" autoplay loop muted playsinline>
+                                <source src="img/Assets.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <div class="work-case-rect work-case-rect--img">
+                            <video class="work-case-rect-img" autoplay loop muted playsinline>
+                                <source src="img/Toys.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <div class="work-footer-wrap">
+        <div class="work-footer-egg-block" id="work-egg-block">
+            <img class="work-footer-egg" id="work-egg" src="img/eg2.png" alt="" height="160">
+            <span class="work-company-date">Click to open!</span>
+        </div>
+        <div class="work-footer-video-block is-hidden" id="work-video-block">
+            <video class="work-footer-video" src="img/newdin1.mp4" muted loop playsinline></video>
+            <span class="work-company-date">You unearthed a Velociraptor!</span>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

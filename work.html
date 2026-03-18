@@ -13,43 +13,43 @@
     <script>!function(){if(!window.matchMedia("(hover: hover)").matches)return;document.body.classList.add("has-custom-cursor");document.documentElement.classList.add("has-custom-cursor");var c=document.createElement("div");c.className="custom-cursor",c.id="custom-cursor",c.innerHTML='<img src="img/cursor.svg" alt="" width="48" height="48">';var sx=sessionStorage.getItem("cursorX"),sy=sessionStorage.getItem("cursorY");if(sx!=null&&sy!=null){c.style.left=sx+"px";c.style.top=sy+"px";}document.body.appendChild(c);}();</script>
 
     <header class="work-header">
-        <a href="index.html" class="work-header-back"><span class="work-header-icon-wrap"><img src="img/Back.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Back_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span>Back</a>
-        <a href="work.html" class="work-header-title">Work</a>
-        <a href="pet-projects.html" class="work-header-pet">Pet projects<span class="work-header-icon-wrap"><img src="img/Next.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Next_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span></a>
+        <a href="#" class="work-header-back" onclick="history.back(); return false;"><span class="work-header-icon-wrap"><img src="img/Back.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Back_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span>Back</a>
+        <a href="index.html" class="work-header-title">Denis Krupin</a>
+        <a href="pet-projects.html" class="work-header-pet" onclick="sessionStorage.setItem('petFrom', 'work')">Pet projects<span class="work-header-icon-wrap"><img src="img/Next.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Next_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span></a>
     </header>
 
     <main class="work-main">
         <div class="work-content">
             <div class="work-company-row">
                 <h1 class="work-company">Yandex Market</h1>
-                <span class="work-company-date">2024—present</span>
+                <span class="work-company-date">(2024—present)</span>
             </div>
             <div class="work-case-list">
-                <div class="work-case-row">
+                <a href="case-skidkomat.html" class="work-case-row work-case-row-link">
                     <span class="work-case-name">Skidkomat</span>
                     <span class="work-case-dots" aria-hidden="true">....................................................................................................................</span>
                     <span class="work-case-year">2026</span>
-                </div>
+                </a>
                 <a href="case-games.html" class="work-case-row work-case-row-link">
-                    <span class="work-case-name">Games</span>
+                    <span class="work-case-name">Mobile Games</span>
                     <span class="work-case-dots" aria-hidden="true">....................................................................................................................</span>
                     <span class="work-case-year">2025</span>
                 </a>
-                <div class="work-case-row">
+                <a href="case-referral.html" class="work-case-row work-case-row-link">
                     <span class="work-case-name">Referal Program</span>
                     <span class="work-case-dots" aria-hidden="true">....................................................................................................................</span>
                     <span class="work-case-year">2025</span>
-                </div>
-                <div class="work-case-row">
+                </a>
+                <a href="case-ugc-gallery.html" class="work-case-row work-case-row-link">
                     <span class="work-case-name">UGC Gallery</span>
                     <span class="work-case-dots" aria-hidden="true">....................................................................................................................</span>
                     <span class="work-case-year">2025</span>
-                </div>
-                <div class="work-case-row">
+                </a>
+                <a href="case-product-page-gallery.html" class="work-case-row work-case-row-link">
                     <span class="work-case-name">Product Page Gallery</span>
                     <span class="work-case-dots" aria-hidden="true">....................................................................................................................</span>
                     <span class="work-case-year">2024</span>
-                </div>
+                </a>
             </div>
         </div>
     </main>

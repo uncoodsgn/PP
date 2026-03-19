@@ -9,36 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="playground-page">
+<body class="playground-page playground-page--work-header">
     <script>!function(){if(!window.matchMedia("(hover: hover)").matches)return;document.body.classList.add("has-custom-cursor");document.documentElement.classList.add("has-custom-cursor");var c=document.createElement("div");c.className="custom-cursor",c.id="custom-cursor",c.innerHTML='<img src="img/cursor.svg" alt="" width="48" height="48">';var sx=sessionStorage.getItem("cursorX"),sy=sessionStorage.getItem("cursorY");if(sx!=null&&sy!=null){c.style.left=sx+"px";c.style.top=sy+"px";}document.body.appendChild(c);}();</script>
+
+    <header class="work-header">
+        <a href="#" class="work-header-back" onclick="history.back(); return false;"><span class="work-header-icon-wrap"><img src="img/Back.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Back_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span>Back</a>
+        <a href="index.html" class="work-header-title">Denis Krupin</a>
+        <a href="pet-projects.html" class="work-header-pet is-hidden" aria-hidden="true" onclick="sessionStorage.setItem('petFrom', 'playground')">Pet projects<span class="work-header-icon-wrap"><img src="img/Next.svg" alt="" class="work-header-icon work-header-icon--default"><img src="img/Next_r.svg" alt="" class="work-header-icon work-header-icon--hover"></span></a>
+    </header>
+
     <div class="container">
-        <header class="header">
-            <div class="header-left">
-                <a href="index.html" class="avatar-link"><img class="avatar" src="img/ava.png" alt="Denis Krupin" /></a>
-            </div>
-            
-            <div class="social-links">
-                <a href="https://t.me/uncoodsgn" class="social-link" target="_blank" rel="noopener">Telegram</a>
-                <a href="https://www.instagram.com/uncoodsgn" class="social-link" target="_blank" rel="noopener">Instagram</a>
-                <a href="https://www.linkedin.com/in/uncoodsgn" class="social-link" target="_blank" rel="noopener">LinkedIn</a>
-                <a href="https://www.behance.net/uncoo" class="social-link" target="_blank" rel="noopener">Behance</a>
-                <a href="https://www.pinterest.com/uncoodsgn" class="social-link" target="_blank" rel="noopener">Pinterest</a>
-                <a href="https://www.are.na/uncoodsgn" class="social-link" target="_blank" rel="noopener">Are.na</a>
-            </div>
-            
-            <nav class="nav">
-                <a href="index.html" class="nav-item">About</a>
-                <a href="work-experience.html" class="nav-item">Work</a>
-                <a href="pet-projects.html" class="nav-item">Pet projects</a>
-                <a href="playground.html" class="nav-item active">Playground</a>
-            </nav>
-        </header>
-
         <main class="main">
-            <section class="hero">
-                <img class="hero-image" src="img/play.gif" alt="Animation" />
-            </section>
-
             <section class="gallery">
                 <div class="gallery-item">
                     <img class="gallery-image" src="img/exp1.gif" alt="Experiment 1" />
@@ -217,25 +198,6 @@
                 <div class="gallery-item">
                     <img class="gallery-image" src="img/exp58.gif" alt="Experiment GIF" />
                 </div>
-            </section>
-
-            <section class="projects">
-                <a href="index.html" class="project-item project-item-link">
-                    <div class="project-title">About</div>
-                    <img class="project-image" src="img/eg1.png" alt="About" />
-                </a>
-                <a href="work-experience.html" class="project-item project-item-link">
-                    <div class="project-title">Work</div>
-                    <img class="project-image" src="img/eg2.png" alt="Work" />
-                </a>
-                <a href="pet-projects.html" class="project-item project-item-link">
-                    <div class="project-title">Pet projects</div>
-                    <img class="project-image" src="img/eg3.png" alt="Pet projects" />
-                </a>
-                <a href="playground.html" class="project-item project-item-link project-item--current">
-                    <div class="project-title">Playground</div>
-                    <img class="project-image" src="img/eg4.png" alt="Playground" />
-                </a>
             </section>
         </main>
     </div>

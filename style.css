@@ -157,8 +157,29 @@ body.playground-page {
     background: #FFFCF4;
 }
 
-body.playground-page .hero {
-    padding-bottom: 0;
+body.playground-page.playground-page--work-header {
+    min-height: 100vh;
+    padding-top: 80px;
+    padding-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+body.playground-page.playground-page--work-header .container {
+    flex: 1 0 auto;
+}
+
+body.playground-page.playground-page--work-header .work-header-back,
+body.playground-page.playground-page--work-header .work-header-title,
+body.playground-page.playground-page--work-header .work-header-pet {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+body.playground-page.playground-page--work-header .work-header-back:hover,
+body.playground-page.playground-page--work-header .work-header-title:hover,
+body.playground-page.playground-page--work-header .work-header-pet:hover {
+    opacity: 1;
 }
 
 body.pet-projects-page {
@@ -1165,7 +1186,7 @@ body.home-page .container {
 
 .project-item:hover .project-image,
 .project-item:hover .project-card-shadow {
-    animation: shake 0.5s ease-in-out infinite;
+    animation: shake 1.2s ease-in-out infinite;
 }
 
 .project-item--current:hover .project-image,
@@ -1175,39 +1196,69 @@ body.home-page .container {
 
 .project-item:first-child:hover .project-image,
 .project-item:first-child:hover .project-card-shadow {
-    animation: shake 0.5s ease-in-out infinite;
+    animation: shake 1.2s ease-in-out infinite;
+}
+
+/* Лёгкое плавное покачивание картинок на главной — в разные стороны */
+/* Меняем угол наклона у всех, по-разному: разная длительность и фаза */
+body.home-page .project-item:nth-child(1) .project-image,
+body.home-page .project-item:nth-child(1) .project-card-shadow {
+    animation: sway-tilt 5s ease-in-out infinite;
+    animation-delay: 0s;
+    transform-origin: center bottom;
+}
+body.home-page .project-item:nth-child(2) .project-image,
+body.home-page .project-item:nth-child(2) .project-card-shadow {
+    animation: sway-tilt 6s ease-in-out infinite;
+    animation-delay: 0.8s;
+    transform-origin: center bottom;
+}
+body.home-page .project-item:nth-child(3) .project-image,
+body.home-page .project-item:nth-child(3) .project-card-shadow {
+    animation: sway-tilt 4.5s ease-in-out infinite;
+    animation-delay: 1.5s;
+    transform-origin: center bottom;
+}
+body.home-page .project-item:nth-child(4) .project-image,
+body.home-page .project-item:nth-child(4) .project-card-shadow {
+    animation: sway-tilt 5.8s ease-in-out infinite;
+    animation-delay: 2.2s;
+    transform-origin: center bottom;
+}
+
+body.home-page .project-item:hover .project-image,
+body.home-page .project-item:hover .project-card-shadow {
+    animation: shake 1.2s ease-in-out infinite;
+}
+
+body.home-page .project-item--current:hover .project-image,
+body.home-page .project-item--current:hover .project-card-shadow {
+    animation: sway-tilt 5s ease-in-out infinite;
+    animation-delay: 0s;
+}
+
+body.home-page .project-item:first-child:hover .project-image,
+body.home-page .project-item:first-child:hover .project-card-shadow {
+    animation: shake 1.2s ease-in-out infinite;
+}
+
+@keyframes sway-tilt {
+    0%, 100% { transform: rotate(-0.8deg); }
+    50% { transform: rotate(0.8deg); }
 }
 
 @keyframes shake {
     0%, 100% {
         transform: translate(0, 0) rotate(0deg);
     }
-    10% {
-        transform: translate(-2px, -1px) rotate(-0.5deg);
-    }
-    20% {
-        transform: translate(2px, 1px) rotate(0.5deg);
-    }
-    30% {
-        transform: translate(-1px, 2px) rotate(-0.3deg);
-    }
-    40% {
-        transform: translate(1px, -1px) rotate(0.3deg);
+    25% {
+        transform: translate(1.5px, -1px) rotate(0.4deg);
     }
     50% {
-        transform: translate(-2px, 1px) rotate(-0.4deg);
+        transform: translate(-1.5px, 1px) rotate(-0.4deg);
     }
-    60% {
-        transform: translate(2px, -2px) rotate(0.4deg);
-    }
-    70% {
-        transform: translate(-1px, -1px) rotate(-0.2deg);
-    }
-    80% {
-        transform: translate(1px, 2px) rotate(0.2deg);
-    }
-    90% {
-        transform: translate(-2px, -2px) rotate(-0.3deg);
+    75% {
+        transform: translate(1px, 1.5px) rotate(0.3deg);
     }
 }
 
@@ -1818,6 +1869,37 @@ body.home-page .container {
     height: auto;
     object-fit: cover;
     display: block;
+}
+
+/* Playground: скругление на медиа; inset-свечение — слой ::after (у <img> inset box-shadow почти не рисуется) */
+body.playground-page .gallery-item {
+    position: relative;
+    border-radius: 60px;
+}
+
+body.playground-page .gallery-item::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.playground-page .gallery-image,
+body.playground-page .gallery-item video {
+    position: relative;
+    z-index: 0;
+    border-radius: 60px;
+    vertical-align: top;
+}
+
+body.playground-page .gallery-item video {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
 }
 
 /* Responsive Design */

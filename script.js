@@ -1,10 +1,11 @@
 // JavaScript код
 
-// Рандомное перемешивание картинок в галерее
+// Рандомное перемешивание картинок в галерее (playground: фиксированный порядок в разметке)
 function shuffleGallery() {
     const gallery = document.querySelector('.gallery');
     if (!gallery) return;
-    
+    if (document.body.classList.contains('playground-page')) return;
+
     const items = Array.from(gallery.children);
     
     // Перемешиваем массив элементов
@@ -16,6 +17,9 @@ function shuffleGallery() {
     // Очищаем галерею и добавляем элементы в новом порядке
     gallery.innerHTML = '';
     items.forEach(item => gallery.appendChild(item));
+    gallery.querySelectorAll('video').forEach((v) => {
+        v.play().catch(() => {});
+    });
 }
 
 // Кастомный курсор для галереи zine: текст "1/N", кегль 24
@@ -55,9 +59,60 @@ function prunePillarGalleries() {
     return Promise.all(Array.from(galleries).map(prunePillarGallery));
 }
 
-// Галерея (zine, pillar и др.): клик — следующее фото, свайп влево/вправо
+const zinGalleryKeyNavApi = new WeakMap();
+let zinGalleryKeyNavListenerAttached = false;
+
+function zinGalleryVisibilityRatio(el) {
+    const r = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = Math.max(0, Math.min(r.right, vw) - Math.max(0, r.left));
+    const h = Math.max(0, Math.min(r.bottom, vh) - Math.max(0, r.top));
+    const area = r.width * r.height;
+    if (area <= 0) return 0;
+    return (w * h) / area;
+}
+
+function getActiveZinGalleryForKeyboard() {
+    let best = null;
+    let bestRatio = 0;
+    document.querySelectorAll('.zin-gallery').forEach((g) => {
+        if (!zinGalleryKeyNavApi.has(g)) return;
+        const ratio = zinGalleryVisibilityRatio(g);
+        if (ratio > bestRatio) {
+            bestRatio = ratio;
+            best = g;
+        }
+    });
+    if (bestRatio < 0.12) return null;
+    return best;
+}
+
+function onZinGalleryDocumentKeydown(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const t = e.target;
+    if (t && (t.closest && t.closest('input, textarea, select, [contenteditable="true"]'))) return;
+
+    const gallery = getActiveZinGalleryForKeyboard();
+    if (!gallery) return;
+    const api = zinGalleryKeyNavApi.get(gallery);
+    if (!api) return;
+    e.preventDefault();
+    if (e.key === 'ArrowRight') api.next();
+    else api.prev();
+}
+
+function attachZinGalleryKeyboardNav(galleryEl, api) {
+    zinGalleryKeyNavApi.set(galleryEl, api);
+    if (zinGalleryKeyNavListenerAttached) return;
+    zinGalleryKeyNavListenerAttached = true;
+    document.addEventListener('keydown', onZinGalleryDocumentKeydown);
+}
+
+// Галерея (zine, oped, pillar): клик слева — назад, справа — вперёд; свайп и стрелки как раньше
 function initOneZinGallery(gallery) {
     const track = gallery.querySelector('.zin-gallery-track');
+    const viewport = gallery.querySelector('.zin-gallery-viewport');
     const slides = gallery.querySelectorAll('.zin-gallery-slide');
     const total = slides.length;
     if (!track || total === 0) return;
@@ -142,8 +197,24 @@ function initOneZinGallery(gallery) {
         });
     });
     
+    if (wrap?.classList.contains('zin-gallery-wrap--zine')) {
+        wrap.addEventListener('dragstart', (e) => e.preventDefault(), true);
+    }
+    
     gallery.addEventListener('mouseenter', updateCursor);
-    gallery.addEventListener('click', next);
+    gallery.addEventListener('click', (e) => {
+        const isZineCase = wrap?.classList.contains('zin-gallery-wrap--zine');
+        if (isZineCase && viewport) {
+            const rect = viewport.getBoundingClientRect();
+            if (rect.width > 0) {
+                const relX = e.clientX - rect.left;
+                if (relX < rect.width / 2) goTo(index - 1);
+                else next();
+                return;
+            }
+        }
+        next();
+    });
     
     let touchStartX = 0;
     let touchEndX = 0;
@@ -159,6 +230,11 @@ function initOneZinGallery(gallery) {
         if (diff > minSwipe) next();
         else if (diff < -minSwipe) goTo(index - 1);
     }, { passive: true });
+    
+    attachZinGalleryKeyboardNav(gallery, {
+        next: () => goTo(index + 1),
+        prev: () => goTo(index - 1)
+    });
     
     updateCursor();
     updateThumbs();
@@ -280,30 +356,435 @@ function initCustomCursor() {
     }, { passive: true });
 }
 
-// Заставка при входе: 1 раз за сессию; rock 300px, «Click to see»; по клику — на главную
+const SPLASH_CURSOR_SRC = 'img/cursor3.png';
+
+function splashCursorGraphicEl() {
+    const cur = document.getElementById('custom-cursor');
+    return cur ? cur.querySelector('img') : null;
+}
+
+function applySplashCursorGraphic() {
+    if (!document.getElementById('splash')) return;
+    const im = splashCursorGraphicEl();
+    if (!im) return;
+    if (!im.dataset.preSplashCursorSrc) {
+        im.dataset.preSplashCursorSrc = im.getAttribute('src') || 'img/cursor.svg';
+    }
+    im.src = SPLASH_CURSOR_SRC;
+}
+
+function restoreSplashCursorGraphic() {
+    const im = splashCursorGraphicEl();
+    if (!im || !im.dataset.preSplashCursorSrc) return;
+    im.src = im.dataset.preSplashCursorSrc;
+    delete im.dataset.preSplashCursorSrc;
+}
+
+// Заставка: «пыль» поверх камня (видно силуэт), стереть почти всё → «Click to see!»; до этого клик не уводит на главную
 function initSplash() {
     if (sessionStorage.getItem('splash-seen')) return;
 
     const splash = document.createElement('div');
     splash.className = 'splash';
     splash.id = 'splash';
-    splash.innerHTML = '<div class="splash-inner"><img src="img/rock.png" alt="" class="splash-img"><p class="splash-text">Click to see</p></div>';
+    splash.innerHTML =
+        '<div class="splash-inner">' +
+        '<div class="splash-img-wrap">' +
+        '<img src="img/rock.png" alt="" class="splash-img">' +
+        '<canvas class="splash-canvas" aria-hidden="true"></canvas>' +
+        '<img src="img/Mask.png" alt="" class="splash-mask" aria-hidden="true">' +
+        '</div>' +
+        '<p class="splash-text">Clear the area</p>' +
+        '</div>';
     document.body.prepend(splash);
+
+    const wrap = splash.querySelector('.splash-img-wrap');
+    const img = splash.querySelector('.splash-img');
+    const maskEl = splash.querySelector('.splash-mask');
+    const canvas = splash.querySelector('.splash-canvas');
+    const textEl = splash.querySelector('.splash-text');
+
+    let ctx = null;
+    let revealed = false;
+    let drawing = false;
+    let lastX;
+    let lastY;
+    let rafCheck = null;
+
+    /** Доля canvas без пыли, чтобы показать CTA (ниже порог + крупная кисть = меньше водить) */
+    const REVEAL_THRESHOLD = 0.74;
+    const BRUSH = 76;
+    const SPLASH_TILT_MAX = 11;
+
+    let splashTiltBound = false;
+
+    function bindSplashReadyHoverTilt() {
+        if (splashTiltBound || !wrap) return;
+        if (!window.matchMedia('(hover: hover)').matches) return;
+        splashTiltBound = true;
+
+        function onWrapMove(e) {
+            if (!splash.classList.contains('splash--ready')) return;
+            const r = wrap.getBoundingClientRect();
+            const mx = ((e.clientX - r.left) / r.width) * 2 - 1;
+            const my = ((e.clientY - r.top) / r.height) * 2 - 1;
+            const px = Math.max(-1, Math.min(1, mx));
+            const py = Math.max(-1, Math.min(1, my));
+            const rotY = px * SPLASH_TILT_MAX;
+            const rotX = -py * SPLASH_TILT_MAX;
+            wrap.style.transform =
+                `perspective(880px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.04, 1.04, 1)`;
+        }
+
+        function onWrapLeave() {
+            wrap.style.transform = '';
+        }
+
+        wrap.addEventListener('mousemove', onWrapMove);
+        wrap.addEventListener('mouseleave', onWrapLeave);
+    }
 
     function isMainPage() {
         const p = window.location.pathname;
         return p === '' || p === '/' || p.endsWith('/') || p.endsWith('index.html');
     }
 
-    splash.addEventListener('click', () => {
+    function setupCanvas() {
+        const w = img.clientWidth;
+        const h = img.clientHeight;
+        if (!w || !h) return false;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.max(1, Math.floor(w * dpr));
+        canvas.height = Math.max(1, Math.floor(h * dpr));
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        if (maskEl) {
+            maskEl.style.width = w + 'px';
+            maskEl.style.height = h + 'px';
+        }
+        ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+        paintDustLayer(w, h, dpr);
+        cutSoftRevealWindow(w, h);
+        return true;
+    }
+
+    /** Лёгкая подсветка центра: картинка почти не видна, только намёк под фейдом */
+    function cutSoftRevealWindow(w, h) {
+        const cx = w * 0.5;
+        const cy = h * 0.44;
+        const rOuter = Math.min(w, h) * 0.22;
+        const rInner = rOuter * 0.18;
+        const g = ctx.createRadialGradient(cx, cy, rInner, cx, cy, rOuter);
+        g.addColorStop(0, 'rgba(255,255,255,0.38)');
+        g.addColorStop(0.22, 'rgba(255,255,255,0.24)');
+        g.addColorStop(0.48, 'rgba(255,255,255,0.1)');
+        g.addColorStop(0.72, 'rgba(255,255,255,0.03)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+    }
+
+    function paintDustLayer(w, h, dpr) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        /* Почти сплошной чёрный как фон заставки — камень едва угадывается */
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.94)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+        ctx.fillRect(0, 0, w, h);
+        /* Зерно: один проход по буферу вместо тысяч fillRect (быстрее на первом кадре) */
+        const bw = canvas.width;
+        const bh = canvas.height;
+        const id = ctx.getImageData(0, 0, bw, bh);
+        const d = id.data;
+        const n = Math.min(4500, Math.floor(w * h * 0.1));
+        for (let i = 0; i < n; i++) {
+            const ux = Math.random() * w;
+            const uy = Math.random() * h;
+            const x0 = Math.min(bw - 1, (ux * dpr) | 0);
+            const y0 = Math.min(bh - 1, (uy * dpr) | 0);
+            const sUser = 1 + Math.random() * 2;
+            const sizeDev = Math.max(1, Math.ceil(sUser * dpr));
+            const dark = (8 + Math.random() * 22) | 0;
+            for (let dy = 0; dy < sizeDev; dy++) {
+                const y = y0 + dy;
+                if (y >= bh) break;
+                for (let dx = 0; dx < sizeDev; dx++) {
+                    const x = x0 + dx;
+                    if (x >= bw) break;
+                    const j = (y * bw + x) * 4;
+                    d[j] = Math.max(0, d[j] - dark);
+                    d[j + 1] = Math.max(0, d[j + 1] - dark);
+                    d[j + 2] = Math.max(0, d[j + 2] - dark);
+                }
+            }
+        }
+        ctx.putImageData(id, 0, 0);
+    }
+
+    function clearCanvasFully() {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+    }
+
+    function eraseAt(clientX, clientY) {
+        if (!ctx) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        if (x < -BRUSH || y < -BRUSH || x > rect.width + BRUSH || y > rect.height + BRUSH) return;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        if (lastX === undefined) {
+            ctx.beginPath();
+            ctx.arc(x, y, BRUSH, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.lineWidth = BRUSH * 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+        ctx.restore();
+        lastX = x;
+        lastY = y;
+    }
+
+    function endStroke() {
+        lastX = undefined;
+        lastY = undefined;
+    }
+
+    function checkRevealProgress() {
+        if (revealed || !ctx) return;
+        let data;
+        try {
+            data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        } catch {
+            return;
+        }
+        let cleared = 0;
+        const total = canvas.width * canvas.height;
+        for (let i = 3; i < data.length; i += 4) {
+            if (data[i] < 52) cleared += 1;
+        }
+        if (cleared / total < REVEAL_THRESHOLD) return;
+        revealed = true;
+        clearCanvasFully();
+        textEl.textContent = 'Click to see!';
+        splash.classList.add('splash--ready');
+        bindSplashReadyHoverTilt();
+    }
+
+    function scheduleCheck() {
+        if (rafCheck !== null) return;
+        rafCheck = requestAnimationFrame(() => {
+            rafCheck = null;
+            checkRevealProgress();
+        });
+    }
+
+    const TAP_MAX_MOVE_PX = 14;
+    let splashNavigated = false;
+    let navPressActive = false;
+    let navStartX = 0;
+    let navStartY = 0;
+    let navMoved = false;
+    let touchNavTracking = false;
+    let touchNavMoved = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function doSplashLeave() {
+        if (splashNavigated || !revealed) return;
+        splashNavigated = true;
         sessionStorage.setItem('splash-seen', '1');
         if (isMainPage()) {
             splash.classList.add('is-hidden');
-            setTimeout(() => splash.remove(), 220);
+            setTimeout(() => {
+                restoreSplashCursorGraphic();
+                splash.remove();
+            }, 900);
         } else {
+            restoreSplashCursorGraphic();
             window.location.href = 'index.html';
         }
+    }
+
+    function onNavPointerDown(e) {
+        if (!revealed || e.button !== 0) return;
+        if (!splash.contains(e.target)) return;
+        navPressActive = true;
+        navMoved = false;
+        navStartX = e.clientX;
+        navStartY = e.clientY;
+    }
+
+    function onNavPointerMove(e) {
+        if (!navPressActive || !revealed) return;
+        if ((e.buttons & 1) !== 1) return;
+        if (Math.hypot(e.clientX - navStartX, e.clientY - navStartY) > TAP_MAX_MOVE_PX) {
+            navMoved = true;
+        }
+    }
+
+    function onNavPointerUp(e) {
+        if (!navPressActive) return;
+        navPressActive = false;
+        if (!revealed) return;
+        if (e.button !== 0) return;
+        if (navMoved) return;
+        doSplashLeave();
+    }
+
+    splash.addEventListener('mousedown', onNavPointerDown);
+    document.addEventListener('mousemove', onNavPointerMove);
+    document.addEventListener('mouseup', onNavPointerUp);
+
+    splash.addEventListener(
+        'touchstart',
+        (e) => {
+            if (!revealed || e.touches.length !== 1) return;
+            if (!splash.contains(e.target)) return;
+            touchNavTracking = true;
+            touchNavMoved = false;
+            const t = e.touches[0];
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+        },
+        { passive: true }
+    );
+
+    splash.addEventListener(
+        'touchmove',
+        (e) => {
+            if (!touchNavTracking || !revealed) return;
+            const t = e.touches[0];
+            if (
+                Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY) > TAP_MAX_MOVE_PX
+            ) {
+                touchNavMoved = true;
+            }
+        },
+        { passive: true }
+    );
+
+    splash.addEventListener(
+        'touchend',
+        (e) => {
+            if (!touchNavTracking || !revealed) return;
+            touchNavTracking = false;
+            if (e.touches.length > 0) return;
+            if (touchNavMoved) return;
+            doSplashLeave();
+        },
+        { passive: true }
+    );
+
+    splash.addEventListener('touchcancel', () => {
+        touchNavTracking = false;
     });
+
+    splash.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    function onDocMove(e) {
+        if (!drawing || revealed) return;
+        if (e.buttons !== 1) return;
+        eraseAt(e.clientX, e.clientY);
+        scheduleCheck();
+    }
+
+    function onDocUp() {
+        if (!drawing) return;
+        drawing = false;
+        document.removeEventListener('mousemove', onDocMove);
+        document.removeEventListener('mouseup', onDocUp);
+        endStroke();
+        checkRevealProgress();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (revealed) return;
+        e.preventDefault();
+        drawing = true;
+        endStroke();
+        eraseAt(e.clientX, e.clientY);
+        scheduleCheck();
+        document.addEventListener('mousemove', onDocMove);
+        document.addEventListener('mouseup', onDocUp);
+    });
+
+    canvas.addEventListener(
+        'touchstart',
+        (e) => {
+            if (revealed) return;
+            e.preventDefault();
+            drawing = true;
+            endStroke();
+            const t = e.touches[0];
+            eraseAt(t.clientX, t.clientY);
+            scheduleCheck();
+        },
+        { passive: false }
+    );
+
+    canvas.addEventListener(
+        'touchmove',
+        (e) => {
+            if (!drawing || revealed) return;
+            e.preventDefault();
+            const t = e.touches[0];
+            eraseAt(t.clientX, t.clientY);
+            scheduleCheck();
+        },
+        { passive: false }
+    );
+
+    canvas.addEventListener('touchend', () => {
+        if (!drawing) return;
+        drawing = false;
+        endStroke();
+        checkRevealProgress();
+    });
+
+    canvas.addEventListener('touchcancel', () => {
+        drawing = false;
+        endStroke();
+    });
+
+    function trySetup() {
+        if (ctx) return;
+        if (!setupCanvas()) return;
+    }
+
+    img.addEventListener('error', () => {
+        if (revealed) return;
+        revealed = true;
+        textEl.textContent = 'Click to see!';
+        splash.classList.add('splash--ready');
+        bindSplashReadyHoverTilt();
+    });
+
+    img.addEventListener('load', trySetup);
+    if (img.complete) trySetup();
+    queueMicrotask(trySetup);
+    requestAnimationFrame(() => requestAnimationFrame(trySetup));
 }
 
 // Время по Москве в футере (формат HH:MM:SS am/pm)
@@ -329,47 +810,10 @@ function initFooterMskTime() {
     setInterval(updateFooterMskTime, 1000);
 }
 
-// Work page: 3 clicks on egg — усиливающаяся тряска, затем показ видео «You find Velociraptor»
-const WORK_EGG_SESSION_KEY = 'workEggUnlocked';
-
-function initWorkEgg() {
-    const eggBlock = document.getElementById('work-egg-block');
-    const egg = document.getElementById('work-egg');
-    const videoBlock = document.getElementById('work-video-block');
-    const video = videoBlock?.querySelector('.work-footer-video');
-    if (!eggBlock || !egg || !videoBlock || !video) return;
-
-    // В течение сессии оставляем видео, если уже открывали
-    if (sessionStorage.getItem(WORK_EGG_SESSION_KEY)) {
-        eggBlock.classList.add('is-hidden');
-        videoBlock.classList.remove('is-hidden');
+function initWorkFooterVideo() {
+    document.querySelectorAll('.work-footer-video').forEach((video) => {
+        if (video.closest('.is-hidden')) return;
         video.play().catch(() => {});
-        return;
-    }
-
-    let clicks = 0;
-
-    egg.addEventListener('click', () => {
-        clicks += 1;
-        const level = Math.min(clicks, 3);
-        egg.classList.remove('work-egg-shake-1', 'work-egg-shake-2', 'work-egg-shake-3');
-        void egg.offsetWidth; // reflow to restart animation
-        egg.classList.add('work-egg-shake-' + level);
-
-        setTimeout(() => {
-            egg.classList.remove('work-egg-shake-1', 'work-egg-shake-2', 'work-egg-shake-3');
-            if (clicks >= 3) {
-                egg.classList.add('work-egg-exit');
-                egg.addEventListener('animationend', function onExit() {
-                    egg.removeEventListener('animationend', onExit);
-                    egg.classList.remove('work-egg-exit');
-                    eggBlock.classList.add('is-hidden');
-                    videoBlock.classList.remove('is-hidden');
-                    sessionStorage.setItem(WORK_EGG_SESSION_KEY, '1');
-                    video.play().catch(() => {});
-                });
-            }
-        }, 400);
     });
 }
 
@@ -382,11 +826,21 @@ window.addEventListener('pageshow', (event) => {
     });
 });
 
+function initPlaygroundGalleryNoDrag() {
+    if (!document.body.classList.contains('playground-page')) return;
+    const gallery = document.querySelector('.gallery');
+    if (!gallery) return;
+    gallery.addEventListener('dragstart', (e) => e.preventDefault());
+    gallery.querySelectorAll('img, video').forEach((el) => el.setAttribute('draggable', 'false'));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initSplash();
     initCustomCursor();
+    applySplashCursorGraphic();
     initFooterMskTime();
-    initWorkEgg();
+    initWorkFooterVideo();
+    initPlaygroundGalleryNoDrag();
     shuffleGallery();
     prunePillarGalleries().then(() => {
         initZinGallery();

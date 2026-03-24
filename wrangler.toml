@@ -1,0 +1,5 @@
+name = "pp"
+compatibility_date = "2025-03-24"
+
+[assets]
+directory = "public"

@@ -934,7 +934,7 @@ body.work-page:has(.work-case-single-main) .work-header {
 
 /* Work page (landing) */
 body.work-page {
-    background: #FFFBF3;
+    background: #FFFEF5;
     min-height: 100vh;
     padding-top:80px;
     padding-bottom: 24px;

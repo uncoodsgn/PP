@@ -100,6 +100,42 @@ html.has-custom-cursor #splash * {
     opacity: 0;
 }
 
+@media (max-width: 768px) {
+    #splash .splash-inner {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding-left: 16px;
+        padding-right: 16px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Весь блок (rock + canvas + mask) не шире 340px */
+    #splash .splash-img-wrap {
+        display: block;
+        width: 100%;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+    }
+
+    #splash .splash-img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #splash .splash-canvas,
+    #splash .splash-mask {
+        width: 100%;
+        height: 100%;
+    }
+}
+
 * {
     margin: 0;
     
@@ -194,6 +230,18 @@ a, button, .nav-item, .project-item-link, .avatar-link, .social-link, .work-case
     cursor: url('img/cursor.svg') 16 16, none;
 }
 
+/* Внешние ссылки (абсолютный URL) — пунктирное подчёркивание */
+a[href^="http://"],
+a[href^="https://"] {
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+}
+
+/* Карточки на главной: без линии под всем блоком; пунктир только у заголовка */
+.project-item-link[href^="http://"],
+.project-item-link[href^="https://"] {
+    text-decoration: none;
+}
 
 body.work-experience-page {
     background: #FFFCF4;
@@ -1142,10 +1190,12 @@ body.home-page .container {
 
 /* «Say hi» — внешняя ссылка, стрелка только на главной (не About на work-experience) */
 body.home-page .project-item--current .project-title::after {
-    content: "\00a0\2197";
+    /* U+FE0E — текстовая глиф, иначе на мобилке ↗ рисуется цветным эмодзи */
+    content: "\00a0\2197\fe0e";
     display: inline;
     font-size: 0.92em;
     font-weight: 500;
+    font-variant-emoji: text;
 }
 
 .project-image {
@@ -1659,6 +1709,11 @@ body.home-page .project-item:nth-child(4) .project-image-wrap {
     color: #FB0000;
 }
 
+.work-case-text-block a[href^="http://"],
+.work-case-text-block a[href^="https://"] {
+    text-decoration-style: dashed;
+}
+
 .work-case-text-block {
     width: 219px;
     font-size: 17px;
@@ -2024,15 +2079,16 @@ body.playground-page .gallery-item video {
         gap: 32px;
     }
     
+    body.home-page .profile-sidebar {
+        order: -1;
+        padding: 0 16px 0 60px;
+        margin-top: 0;
+    }
+    
     body.home-page .home-top .hero {
         width: 100%;
         padding-left: 16px;
-        padding-bottom: 0;
-    }
-    
-    body.home-page .profile-sidebar {
-        padding: 0 16px 60px 60px;
-        margin-top: 0;
+        padding-bottom: 60px;
     }
     
     body.home-page .main {
@@ -2094,6 +2150,10 @@ body.playground-page .gallery-item video {
         font-size: 24px;
     }
     
+    .hero-text p:last-child {
+        width: 150px;
+    }
+    
     .projects {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -2145,6 +2205,20 @@ body.playground-page .gallery-item video {
     .gallery-item {
         margin-bottom: 8px;
     }
+
+    /* Playground: 16px от краёв экрана даёт .container, между картинками 8px — без двойного padding */
+    body.playground-page .gallery {
+        padding-left: 0;
+        padding-right: 0;
+        column-count: 2;
+        column-gap: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    body.playground-page .gallery-item {
+        margin-bottom: 8px;
+    }
     
     .work-experience-gif,
     .pet-projects-gif {
@@ -2194,14 +2268,14 @@ body.playground-page .gallery-item video {
         gap: 8px;
     }
     
-    .work-case-rect {
+    .work-experience-page .work-case-rect {
         width: 100%;
         max-width: 100%;
         padding: 40px;
         box-sizing: border-box;
     }
     
-    .work-case-video {
+    .work-experience-page .work-case-video {
         width: auto;
         height: auto;
         max-width: 100%;
@@ -2209,7 +2283,7 @@ body.playground-page .gallery-item video {
         object-fit: contain;
     }
     
-    .work-case-rect--ugc {
+    .work-experience-page .work-case-rect--ugc {
         width: 100%;
         max-width: 100%;
         padding: 40px;
@@ -2227,7 +2301,7 @@ body.playground-page .gallery-item video {
         max-width: 100%;
     }
     
-    .work-case-video--ugc {
+    .work-experience-page .work-case-video--ugc {
         width: 100%;
         height: auto;
         max-width: 100%;
@@ -2383,27 +2457,88 @@ body.playground-page .gallery-item video {
     
     body.work-page:has(.work-case-single-main) .work-case-media-row {
         flex-direction: column;
-        align-items: stretch;
+        /* Вертикальные блоки — по десктопным px; широкий тянется на ширину ряда */
+        align-items: center;
         gap: 16px;
+        /* Шире колонки, но с отступом 16px от краёв экрана */
+        width: calc(100vw - 32px);
+        max-width: calc(100vw - 32px);
+        margin-left: calc(50% - 50vw + 16px);
+        margin-right: calc(50% - 50vw + 16px);
+        box-sizing: border-box;
     }
-    
-    body.work-page:has(.work-case-single-main) .work-case-column--single .work-case-rect,
-    body.work-page:has(.work-case-single-main) .work-case-rect--main,
-    body.work-page:has(.work-case-single-main) .work-case-column--single .work-case-rect--wide,
-    body.work-page:has(.work-case-single-main) .work-case-column--single .work-case-rect--img {
+
+    body.work-page:has(.work-case-single-main) .work-case-media-row .work-case-rect,
+    body.work-page:has(.work-case-single-main) .work-case-media-row .work-case-rect-column .work-case-rect {
+        padding: 0;
+    }
+
+    body.work-page:has(.work-case-single-main) .work-case-media-row .work-case-rect--main:not(.work-case-rect--wide),
+    body.work-page:has(.work-case-single-main) .work-case-media-row .work-case-rect-column {
+        align-self: center;
+    }
+
+    body.work-page:has(.work-case-single-main) .work-case-column--single .work-case-rect--wide {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
+        align-self: stretch;
     }
-    
+
     body.work-page:has(.work-case-single-main) .work-case-rect-column {
-        width: 100%;
+        width: auto;
         max-width: 100%;
     }
-    
-    body.work-page:has(.work-case-single-main) .work-case-cmsht-wrap .work-case-rect {
-        width: 100%;
-        max-width: 100%;
+
+    /* UGC: широкий блок — та же ширина, что у верхнего (277×418), пропорции рамки 513×418 */
+    body.work-page:has(.work-case--ugc.work-case-single-content)
+        .work-case--ugc.work-case-single-content
+        .work-case-media-row
+        .work-case-rect--wide {
+        width: 277px;
+        max-width: min(277px, 100%);
+        height: auto;
+        aspect-ratio: 513 / 418;
+        align-self: center;
+        box-sizing: border-box;
+    }
+
+    /* Видео чуть меньше рамки — виден чёрный отступ внутри прямоугольника */
+    body.work-page:has(.work-case--ugc.work-case-single-content)
+        .work-case--ugc.work-case-single-content
+        .work-case-media-row
+        .work-case-rect--wide
+        .work-case-video--ugcgal {
+        width: auto;
+        height: auto;
+        max-width: 78%;
+        max-height: 78%;
+        object-fit: contain;
+    }
+
+    /* Product Page Gallery: широкий блок и видео — как UGC на мобиле */
+    body.work-page:has(.work-case--product-gallery.work-case-single-content)
+        .work-case--product-gallery.work-case-single-content
+        .work-case-media-row
+        .work-case-rect--wide {
+        width: 277px;
+        max-width: min(277px, 100%);
+        height: auto;
+        aspect-ratio: 513 / 418;
+        align-self: center;
+        box-sizing: border-box;
+    }
+
+    body.work-page:has(.work-case--product-gallery.work-case-single-content)
+        .work-case--product-gallery.work-case-single-content
+        .work-case-media-row
+        .work-case-rect--wide
+        .work-case-video--gallery {
+        width: auto;
+        height: auto;
+        max-width: 78%;
+        max-height: 78%;
+        object-fit: contain;
     }
 }
 
@@ -2500,14 +2635,15 @@ body.playground-page .gallery-item video {
         gap: 8px;
     }
     
-    .work-case-rect {
+    /* Work Experience: прямоугольники на всю колонку. Страницы кейсов (work-page + single-main) не затрагиваем */
+    .work-experience-page .work-case-rect {
         width: 100%;
         max-width: 100%;
         padding: 40px;
         box-sizing: border-box;
     }
     
-    .work-case-video {
+    .work-experience-page .work-case-video {
         width: auto;
         height: auto;
         max-width: 100%;
@@ -2515,7 +2651,7 @@ body.playground-page .gallery-item video {
         object-fit: contain;
     }
     
-    .work-case-rect--ugc {
+    .work-experience-page .work-case-rect--ugc {
         width: 100%;
         max-width: 100%;
         padding: 40px;
@@ -2533,7 +2669,7 @@ body.playground-page .gallery-item video {
         max-width: 100%;
     }
     
-    .work-case-video--ugc {
+    .work-experience-page .work-case-video--ugc {
         width: 100%;
         height: auto;
         max-width: 100%;

@@ -456,11 +456,12 @@ function initSplash() {
         const dpr = window.devicePixelRatio || 1;
         canvas.width = Math.max(1, Math.floor(w * dpr));
         canvas.height = Math.max(1, Math.floor(h * dpr));
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
+        /* Размер на экране задаёт CSS (100% от .splash-img-wrap), иначе inline-px ломают моб. 340px */
+        canvas.style.width = '';
+        canvas.style.height = '';
         if (maskEl) {
-            maskEl.style.width = w + 'px';
-            maskEl.style.height = h + 'px';
+            maskEl.style.width = '';
+            maskEl.style.height = '';
         }
         ctx = canvas.getContext('2d');
         ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -587,6 +588,10 @@ function initSplash() {
         textEl.textContent = 'Click to see!';
         splash.classList.add('splash--ready');
         bindSplashReadyHoverTilt();
+        /* Мобильная вёрстка (как в CSS): через 1.5 с уходим на главную без тапа */
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            window.setTimeout(doSplashLeave, 1500);
+        }
     }
 
     function scheduleCheck() {
@@ -779,6 +784,9 @@ function initSplash() {
         textEl.textContent = 'Click to see!';
         splash.classList.add('splash--ready');
         bindSplashReadyHoverTilt();
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            window.setTimeout(doSplashLeave, 1500);
+        }
     });
 
     img.addEventListener('load', trySetup);

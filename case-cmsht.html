@@ -6,10 +6,10 @@
     <title>CMSHT App - Denis Krupin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="work-page">
+<body class="work-page pet-page">
     <script>!function(){if(!window.matchMedia("(hover: hover)").matches)return;document.body.classList.add("has-custom-cursor");document.documentElement.classList.add("has-custom-cursor");var c=document.createElement("div");c.className="custom-cursor",c.id="custom-cursor",c.innerHTML='<img src="img/cursor.svg" alt="" width="48" height="48">';var sx=sessionStorage.getItem("cursorX"),sy=sessionStorage.getItem("cursorY");if(sx!=null&&sy!=null){c.style.left=sx+"px";c.style.top=sy+"px";}document.body.appendChild(c);}();</script>
 
     <header class="work-header">
@@ -32,13 +32,13 @@
                 </div>
                 <div class="work-case-media-row">
                     <div class="work-case-rect work-case-rect--main">
-                        <video class="work-case-video" autoplay loop muted playsinline>
+                        <video class="work-case-video" poster="img/cmsht-poster.webp" preload="metadata" autoplay loop muted playsinline>
                             <source src="img/cmsht.mp4" type="video/mp4">
                         </video>
                     </div>
                     <div class="work-case-rect-column">
                         <div class="work-case-rect work-case-rect--main">
-                            <video class="work-case-video" autoplay loop muted playsinline>
+                            <video class="work-case-video" poster="img/cmsht_g-poster.webp" preload="metadata" autoplay loop muted playsinline>
                                 <source src="img/cmsht_g.mp4" type="video/mp4">
                             </video>
                         </div>
@@ -50,7 +50,7 @@
 
     <div class="work-footer-wrap">
         <div class="work-footer-video-block" id="work-video-block">
-            <video class="work-footer-video" src="img/pet.mp4" muted loop playsinline autoplay></video>
+            <video class="work-footer-video" src="img/pet.mp4" poster="img/pet-poster.webp" preload="metadata" muted loop playsinline autoplay></video>
             <span class="work-company-date">This is Pterosaur!</span>
         </div>
     </div>

@@ -9,3 +9,7 @@
 .vscode/
 *.swp
 *.swo
+
+# Local backups (see backup/README.md)
+backup/*.tar.gz
+backup/*.zip

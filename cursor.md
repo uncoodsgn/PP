@@ -7,9 +7,10 @@
 | Путь | Назначение |
 |------|------------|
 | `index.html` | Главная |
-| `work.html`, `pet-projects.html` | Разделы работ |
+| `interfaces.html` | Раздел Interfaces (работа) |
+| `graphics-3d.html` | Раздел Graphics & 3D |
 | `case-*.html` | Страницы отдельных кейсов |
-| `playground.html` | Песочница |
+| `experiments.html` | Раздел Experiments |
 | `style.css`, `script.js` | Общие стили и скрипты |
 | `img/` | Медиа |
 

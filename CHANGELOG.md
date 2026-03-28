@@ -5,6 +5,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Разделы переименованы в файлах и классах: `interfaces.html`, `graphics-3d.html`, `experiments.html` (вместо `work.html`, `pet-projects.html`, `playground.html`); соответствующие классы `body` и модификаторы карточек на главной.
+
 ### Added
 
 - Документация для Cursor: `cursor.md`, `.cursor/rules/`, `.cursor/skills/`.

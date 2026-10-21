@@ -11,5 +11,7 @@
 
 ### Added
 
+- Изображения Arrow и Bird в начале галереи Experiments.
+
 - Документация для Cursor: `cursor.md`, `.cursor/rules/`, `.cursor/skills/`.
 - `CHANGELOG.md`, каталог `backup/` и скрипт `scripts/backup.sh`.
